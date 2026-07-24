@@ -41,6 +41,28 @@ public class OrderServiceQueryTests
     }
 
     [Fact]
+    public async Task GetOrders_FirstPage_ContainsNewestOrders_AndLastPageNotBlank()
+    {
+        using var db = TestSetup.CreateContext();
+        var service = TestSetup.CreateOrderService(db);
+        var customer = TestSetup.AddCustomer(db);
+
+        // 25 orders, i=0 is the newest (most recent CreatedAt).
+        for (var i = 0; i < 25; i++)
+            db.Orders.Add(new Order { CustomerId = customer.Id, Status = OrderStatus.Confirmed, CreatedAt = DateTime.UtcNow.AddMinutes(-i) });
+        db.SaveChanges();
+
+        var expectedNewest = db.Orders.Max(o => o.CreatedAt);
+
+        var page1 = await service.GetOrdersAsync(1, 20, null);
+        Assert.Equal(20, page1.Items.Count);
+        Assert.Equal(expectedNewest, page1.Items[0].CreatedAt);
+
+        var lastPage = await service.GetOrdersAsync(2, 20, null);
+        Assert.Equal(5, lastPage.Items.Count);
+    }
+
+    [Fact]
     public async Task GetCustomerOrders_ReturnsOnlyThatCustomersOrders()
     {
         using var db = TestSetup.CreateContext();
