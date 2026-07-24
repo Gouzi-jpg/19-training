@@ -1,0 +1,45 @@
+@model LowStockViewModel
+@{
+    ViewData["Title"] = "低庫存警示";
+}
+
+<h1 class="h3 mb-3">低庫存警示</h1>
+
+<form method="get" asp-action="LowStock" class="row row-cols-lg-auto g-2 align-items-start mb-3">
+    <div class="col-12">
+        <label asp-for="Threshold" class="col-form-label"></label>
+    </div>
+    <div class="col-12">
+        <input asp-for="Threshold" class="form-control" style="width: 8rem;" placeholder="10" />
+        <span asp-validation-for="Threshold" class="text-danger"></span>
+    </div>
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">查詢</button>
+    </div>
+</form>
+
+<table class="table table-hover align-middle">
+    <thead>
+        <tr>
+            <th>SKU</th>
+            <th>名稱</th>
+            <th class="text-end">現有庫存</th>
+            <th class="text-end">近 30 天售出數量</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var product in Model.Products)
+        {
+            <tr class="@(product.StockQuantity < 5 ? "table-danger" : null)">
+                <td>@product.Sku</td>
+                <td>@product.Name</td>
+                <td class="text-end">@product.StockQuantity</td>
+                <td class="text-end">@product.SoldLast30Days</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
